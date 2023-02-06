@@ -1,0 +1,59 @@
+/* Define a pasta de trabalho */
+LIBNAME LBGS "/dados/recup/gecor_servicos/adm/interno/";
+/* Define as conexes DB2 */
+LIBNAME TEMP DB2 AUTHDOMAIN='******' SCHEMA=SESSION DATABASE=BDB2P04 CONNECTION=GLOBAL;
+    CONNECT TO DB2 as con1 (AUTHDOMAIN='*******' DATABASE=BDB2P04 CONNECTION=GLOBAL);
+
+
+PROC SQL;
+
+
+    
+create table LBGS.lista_vinculo as
+    select * from connection to con1 (
+select
+digits(t1.nr_unco_ctr_opr) as 
+nr_unco,
+t1.nr_unco_ctr_opr,
+digits(t1.nr_unco_ctr_vcld) as vinculado,
+dt_vcl_ctr
+from db2opr.vcl_ctr t1
+
+);
+
+
+disconnect from con1;
+QUIT;
+
+
+/* Exporta o resultado da tabela anterior para um arquivo: */
+PROC EXPORT
+    DATA=LBGS.lista_vinculo
+    OUTFILE="/dados/recup/gecor_servicos/adm/interno/lista_vinculo.txt"
+    DBMS=TAB
+    REPLACE;
+    PUTNAMES=NO;
+QUIT;
+/* Transfere o arquivo do passo anterior para o seu servidor, entra no seu servidor, importa os dados para uma tabela, executa a procedure relevante: */
+DATA _null_;
+        %sysexec %str(
+                cd /dados/recup/gecor_servicos/adm/interno/;
+                scp lista_vinculo.txt root@*****:/dados/arquivos/sas_saida/;
+                rm lista_vinculo.txt;
+                ssh root@****** "
+                        cd /dados/arquivos/sas_saida/;
+                        mysql -u***** -p***** -se \"
+                                DELETE FROM ConectaContabilizar.tb_vinculo_sas;
+
+                                LOAD DATA INFILE '/dados/arquivos/sas_saida/lista_vinculo.txt' IGNORE
+                                INTO TABLE ConectaContabilizar.tb_vinculo_sas
+                                FIELDS TERMINATED BY '\t'
+                                LINES TERMINATED BY '\n'
+                                (@c01,@c02,@c03)
+                                set nr_unco=@c01, vinculado=@c02, dt_vcl_ctr=@c03;
+
+                        \";
+                        rm /dados/arquivos/sas_saida/lista_vinculo.txt;
+                ";
+    );
+RUN;

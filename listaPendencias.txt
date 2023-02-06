@@ -1,0 +1,9 @@
+Contabilização a Vista
+
+Honorários e custas - quando houver mais de uma operação na proposta -> valores vem por proposta e não por operação (ver se pode vir na mesma proposta 2 ou mais operações com NPJ)
+Perdas ou em Ser - ver na plataforma onde pode ser consultada essa informação
+
+Súmula Papel => Tratamento diferenciado demanda uma programação diferenciada - ver se vai onerar demais - aparentemente são processos diferentes
+
+Título Razão - Tabela com os dados - Solicitar para equipe responsável
+
